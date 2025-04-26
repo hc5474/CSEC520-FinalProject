@@ -22,7 +22,7 @@ dst_root = os.path.join(project_root, "CSEC520-FinalProject", "sampled_data")
 
 days = ["Friday-02-03-2018", "Friday-16-02-2018", "Friday-23-02-2018"]
 sample_size = 50
-random.seed(520)
+random.seed(5202025)
 
 for day in days:
     src_pcap_dir = os.path.join(src_root, day, "pcap")
@@ -35,6 +35,19 @@ for day in days:
     sampled = random.sample(pcap_files, sample_size)
 
     for fname in sampled:
-        shutil.copy2(os.path.join(src_pcap_dir, fname), os.path.join(dst_pcap_dir, f"{fname}.pcap"))
+        shutil.copy2(os.path.join(src_pcap_dir, fname), os.path.join(dst_pcap_dir, fname))
 
     print(f"Sampled {len(sampled)} files from {day} → {dst_pcap_dir}")
+
+for day in days:
+    dst_pcap_dir = os.path.join(dst_root, day)
+
+    pcap_files = [f for f in os.listdir(dst_pcap_dir)]
+
+    for fname in pcap_files:
+        if not fname.endswith(".pcap"):
+            old_path = os.path.join(dst_pcap_dir, fname)
+            new_path = os.path.join(dst_pcap_dir, fname + '.pcap')
+            os.rename(old_path, new_path)
+            print(f"Renamed {fname} → {fname}.pcap")
+
