@@ -1,43 +1,144 @@
-'''
-AI Usage: Error catching
-'''
+"""
+AI Usage: Error catching, Labeling Flows based on Attack Windows
+"""
 
 import os
-import subprocess
+import pandas as pd
+from datetime import datetime
 
-# Paths
-project_root = r"/Users/hanchen/Desktop/Junior Spring/CSEC 520 Cyber Machine Learning/CSEC520-FinalProject"
-sampled_root = os.path.join(project_root, "sampled_data")
-flow_output_root = os.path.join(project_root, "flow_output")
+flow_root = r"D:\CSEC520-Project\Friday_only\Flow"
+flow_labeled_root = r"D:\CSEC520-Project\CSEC520-FinalProject\CICFlowmeter_Processed_Friday_flow_labeled"
+os.makedirs(flow_labeled_root, exist_ok=True)
 
-# Command to run cicflowmeter
-def run_cicflowmeter(pcap_path, output_csv):
-    cmd = [
-        "cicflowmeter",
-        "-f", pcap_path,
-        "-c", output_csv
-    ]
-    return subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+final_output_csv = os.path.join(flow_labeled_root, "Friday_Full_Labeled.csv")
 
-days = ["Friday-02-03-2018", "Friday-16-02-2018", "Friday-23-02-2018"]
+attack_windows = [
+    {
+        "attack_name": "DoS-SlowHTTPTest",
+        "attacker_ips": ["13.59.126.31", "172.31.70.23"],
+        "victim_ips": ["172.31.69.25", "18.217.21.148"],
+        "day": "Fri-16-02-2018",
+        "start_time": "10:12",
+        "end_time": "11:08"
+    },
+    {
+        "attack_name": "DoS-Hulk",
+        "attacker_ips": ["172.31.70.16", "18.219.193.20"],
+        "victim_ips": ["172.31.69.25", "18.217.21.148"],
+        "day": "Fri-16-02-2018",
+        "start_time": "13:45",
+        "end_time": "14:19"
+    },
+    {
+        "attack_name": "Brute Force -Web",
+        "attacker_ips": ["18.218.115.60"],
+        "victim_ips": ["172.31.69.28", "18.218.83.150"],
+        "day": "Fri-23-02-2018",
+        "start_time": "10:03",
+        "end_time": "11:03"
+    },
+    {
+        "attack_name": "Brute Force -XSS",
+        "attacker_ips": ["18.218.115.60"],
+        "victim_ips": ["172.31.69.28", "18.218.83.150"],
+        "day": "Fri-23-02-2018",
+        "start_time": "13:00",
+        "end_time": "14:10"
+    },
+    {
+        "attack_name": "SQL Injection",
+        "attacker_ips": ["18.218.115.60"],
+        "victim_ips": ["172.31.69.28", "18.218.83.150"],
+        "day": "Fri-23-02-2018",
+        "start_time": "15:05",
+        "end_time": "15:18"
+    },
+    {
+        "attack_name": "Bot",
+        "attacker_ips": ["18.219.211.138"],
+        "victim_ips": [
+            "18.217.218.111", "18.222.10.237", "18.222.86.193", "18.222.62.221",
+            "13.59.9.106", "18.222.102.2", "18.219.212.0", "18.216.105.13",
+            "18.219.163.126", "18.216.164.12", "172.31.69.23", "172.31.69.17",
+            "172.31.69.14", "172.31.69.12", "172.31.69.10", "172.31.69.8",
+            "172.31.69.6", "172.31.69.26", "172.31.69.29", "172.31.69.30"
+        ],
+        "day": "Fri-02-03-2018",
+        "start_time": "10:11",
+        "end_time": "11:34"
+    },
+    {
+        "attack_name": "Bot",
+        "attacker_ips": ["18.219.211.138"],
+        "victim_ips": [
+            "18.217.218.111", "18.222.10.237", "18.222.86.193", "18.222.62.221",
+            "13.59.9.106", "18.222.102.2", "18.219.212.0", "18.216.105.13",
+            "18.219.163.126", "18.216.164.12", "172.31.69.23", "172.31.69.17",
+            "172.31.69.14", "172.31.69.12", "172.31.69.10", "172.31.69.8",
+            "172.31.69.6", "172.31.69.26", "172.31.69.29", "172.31.69.30"
+        ],
+        "day": "Fri-02-03-2018",
+        "start_time": "14:24",
+        "end_time": "15:55"
+    }
+]
 
-for day in days:
-    pcap_dir = os.path.join(sampled_root, day)
-    output_dir = os.path.join(flow_output_root, day)
+def label_flow(row):
+    src_ip = row['Src IP']
+    dst_ip = row['Dst IP']
+    timestamp = row['Timestamp']
 
-    os.makedirs(output_dir, exist_ok=True)
+    if pd.isna(timestamp):
+        return "Benign"
 
-    pcap_files = [f for f in os.listdir(pcap_dir) if f.endswith('.pcap')]
+    date_str = timestamp.strftime("Fri-%d-%m-%Y")
+    time_obj = timestamp.time()
 
-    for fname in pcap_files:
-        pcap_path = os.path.join(pcap_dir, fname)
-        output_csv = os.path.join(output_dir, f"{os.path.splitext(fname)[0]}.csv") 
-        
-        try:
-            result = run_cicflowmeter(pcap_path, output_csv)
-            if result.returncode == 0:
-                print(f"[+] Successfully processed: {fname}")
-            else:
-                print(f"[!] Error processing {fname}: {result.stderr.decode()}")
-        except Exception as e:
-            print(f"[!] Failed to process {fname}: {str(e)}")
+    for attack in attack_windows:
+        if attack['day'] != date_str:
+            continue
+        if not (src_ip in attack['attacker_ips'] or dst_ip in attack['attacker_ips']):
+            continue
+        if not (src_ip in attack['victim_ips'] or dst_ip in attack['victim_ips']):
+            continue
+
+        attack_start = datetime.strptime(attack['start_time'], "%H:%M").time()
+        attack_end = datetime.strptime(attack['end_time'], "%H:%M").time()
+
+        if attack_start <= time_obj <= attack_end:
+            return attack['attack_name']
+    
+    return "Benign"
+
+all_flows = []
+
+for day_folder in os.listdir(flow_root):
+    day_path = os.path.join(flow_root, day_folder)
+    if not os.path.isdir(day_path):
+        continue
+
+    print(f"Processing day: {day_folder}")
+
+    for flow_csv in os.listdir(day_path):
+        if not flow_csv.endswith('.csv'):
+            continue
+
+        csv_path = os.path.join(day_path, flow_csv)
+        df = pd.read_csv(csv_path)
+
+        df['Timestamp'] = pd.to_datetime(df['Timestamp'], format='%d/%m/%Y %I:%M:%S %p', errors='coerce')
+
+        if 'Label' not in df.columns:
+            df['Label'] = 'No Label'
+
+        df['Label'] = df.apply(label_flow, axis=1)
+        print(f"Processed file: {flow_csv}")
+        all_flows.append(df)
+
+print("Merging all Fridays together...")
+
+full_dataset = pd.concat(all_flows, ignore_index=True)
+
+full_dataset.to_csv(final_output_csv, index=False)
+
+print(f"Full Friday dataset saved to {final_output_csv}")

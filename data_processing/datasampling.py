@@ -16,6 +16,9 @@ This script is specifically used to sample from the original dataset.
 This script is written for Windows OS.
 
 AI Usage: N/A
+
+
+This is deprecated. The inital approach of sampling some captures did not workout correctly.
 '''
 
 import os
