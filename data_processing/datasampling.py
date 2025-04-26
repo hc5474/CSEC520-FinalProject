@@ -1,6 +1,9 @@
 '''
 This script is used by Han's Desktop where he had the entire dataset stored.
-The dataset was very huge (~450G) so we decided to use only a subset of all Fridays' pcap files.
+The full dataset is huge (~450G) and contains all captures from Tuesday to Friday. 
+Due to storage limitation, we decided to save all Friday Captures and sample only a subset of all Fridays' pcap files.
+
+There are three Friday Captures, we will be sampling 50 pcap files from each of the which still resulted in around 15G.
 
 This script randomly samples a specified number of PCAP files from selected days
 of the CSE-CIC-IDS2018 dataset and copies into a new project directory structure.
@@ -10,6 +13,9 @@ It copis the sampled PCAPs into the destination folder.
 Uses a fixed random seed, 520
 
 This script is specifically used to sample from the original dataset. 
+This script is written for Windows OS.
+
+AI Usage: N/A
 '''
 
 import os
