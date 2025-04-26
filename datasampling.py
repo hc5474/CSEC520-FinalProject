@@ -1,3 +1,17 @@
+'''
+This script is used by Han's Desktop where he had the entire dataset stored.
+The dataset was very huge (~450G) so we decided to use only a subset of all Fridays' pcap files.
+
+This script randomly samples a specified number of PCAP files from selected days
+of the CSE-CIC-IDS2018 dataset and copies into a new project directory structure.
+
+For each listed day, it randomly selectes 50 PCAP files.
+It copis the sampled PCAPs into the destination folder.
+Uses a fixed random seed, 520
+
+This script is specifically used to sample from the original dataset. 
+'''
+
 import os
 import shutil
 import random
