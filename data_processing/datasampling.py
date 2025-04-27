@@ -9,10 +9,11 @@ cleaned_friday_path = os.path.join(cleaned_friday_root, "two_fridays_labeled_cle
 os.makedirs(cleaned_friday_root, exist_ok=True)
 
 df = pd.read_csv(full_label_friday_path)
-
+print("Data Loaded into dataframe")
 remove_features = ['Flow ID', 'Src IP', 'Src Port', 'Dst IP', 'Dst Port', 'Timestamp', 'Pkt Len Var']
 
 df = df.drop(columns=remove_features)
+print("Non-useful features dropped")
 
 benign_count = (df['Label'] == 'Benign').sum()
 attack_count = (df['Label'] != 'Benign').sum()
