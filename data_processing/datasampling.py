@@ -40,8 +40,9 @@ print("===================")
 print(f"Sampled Benign flows")
 print(f"Size of Benign Samples: {len(benign_sampled)}")
 print(f"Size of Attack Data: {len(df_attack)}")
-print("===================")
+print("===================\n")
 
+print("Splitting Data......\n")
 # Spliting data: 70% benign → Training; 15% benign → Validation; 15% benign → Test benign + 100% Test attack
 benign_train, benign_temp = train_test_split(benign_sampled, test_size=0.3, random_state=SEED, shuffle=True)
 benign_train = pd.DataFrame(benign_train)
@@ -49,8 +50,22 @@ benign_temp = pd.DataFrame(benign_temp)
 benign_val, benign_test = train_test_split(benign_temp, test_size=0.5, random_state=SEED, shuffle=True)
 benign_val = pd.DataFrame(benign_val)
 benign_test = pd.DataFrame(benign_test)
-
 test_set = pd.concat([benign_test, df_attack], ignore_index=True)
+
+total_benign_sampled = len(benign_sampled)
+total_attack = len(df_attack)
+
+print("===================")
+print("Benign Samples Split:")
+print(f"  Train      : {len(benign_train)} flows ({len(benign_train) / total_benign_sampled * 100:.2f}%)")
+print(f"  Validation : {len(benign_val)} flows ({len(benign_val) / total_benign_sampled * 100:.2f}%)")
+print(f"  Test       : {len(benign_test)} flows ({len(benign_test) / total_benign_sampled * 100:.2f}%)")
+print("")
+print(f"Malicious Samples (for Test only): {total_attack} flows")
+print("")
+print(f"Final Test Set (Benign + Malicious): {len(benign_test) + total_attack} flows")
+print("===================")
+
 
 print("Processing splitted Data into usable form for sklearn......")
 X_train = benign_train.drop(columns=['Label'])
