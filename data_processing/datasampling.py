@@ -166,7 +166,6 @@ undersampled_counts = (
     .apply(lambda x: "Attack" if x != "Benign" else "Benign")
     .value_counts()
 )
-
 train_size = len(benign_train)
 val_size = len(benign_val)
 benign_test_size = len(benign_test)
@@ -186,6 +185,7 @@ for bar in bars:
     plt.text(bar.get_x() + bar.get_width()/2.0, height, f'{height}', ha='center', va='bottom')
 plt.show()
 
+# Feature correlation Heatmap graph
 df_final = pd.concat([benign_sampled, df_attack], ignore_index=True)
 print(df_final.describe())
 
@@ -195,6 +195,7 @@ sns.heatmap(corr_matrix, cmap="coolwarm", linewidths=0.5)
 plt.title("Feature Correlation Heatmap")
 plt.show()
 
+# Feature variances
 top_variances = df_final.drop(columns=['Label']).var().sort_values(ascending=False).head(10)
 plt.figure(figsize=(10,5))
 top_variances.plot(kind='bar', color='purple')
@@ -206,7 +207,7 @@ plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.tight_layout()
 plt.show()
 
-
+# Feature data skewness graph
 top_skewness = df_final.drop(columns=['Label']).skew().sort_values(ascending=False).head(10)
 
 plt.figure(figsize=(10,5))
