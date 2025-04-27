@@ -187,9 +187,6 @@ plt.show()
 
 # Feature correlation Heatmap graph
 df_final = pd.concat([benign_sampled, df_attack], ignore_index=True)
-print("Data Describe:\n")
-print(df_final.describe())
-
 plt.figure(figsize=(12,10))
 corr_matrix = df_final.drop(columns=['Label']).corr()
 sns.heatmap(corr_matrix, cmap="coolwarm", linewidths=0.5)
