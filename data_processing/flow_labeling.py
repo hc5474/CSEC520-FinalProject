@@ -1,5 +1,10 @@
 """
-AI Usage: Error catching, Labeling Flows based on Attack Windows
+AI Usage: Error catching, Parsing the attack window based Article's table
+
+The full dataset was about 450G, so we decided to only use Friday 02-03-2018 and Friday 23-02-2018.
+
+After the CICFlowMeter generated the data for the traffic flow based on the pcap files, the flow data does not include labels.
+This script labels each flow with Benign or its attack type based on the attacking table given in the documentation of the dataset.
 """
 
 import os
