@@ -1,4 +1,10 @@
 """
+AI Usage Statement
+Tools Used: ChatGPT
+    - Usage: Code runtime info printing
+    - Verification: Code are manually written
+Prohibited Use Compliance: Confirmed
+
 This script is for processing labled CICFlowMeter Friday dataset.
 This script:
     - Loads the full labeled CSV file containing network traffic flow data.

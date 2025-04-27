@@ -1,5 +1,9 @@
 """
-AI Usage: Error catching, Parsing the attack window based Article's table
+AI Usage Statement
+Tools Used: ChatGPT
+    - Usage: Parsing the attack window based on Article's table
+    - Verification: Checked the accuracy of the parsed info. Fixed some error.
+Prohibited Use Compliance: Confirmed
 
 The full dataset was about 450G, so we decided to only use Friday 02-03-2018 and Friday 23-02-2018.
 
