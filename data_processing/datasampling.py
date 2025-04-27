@@ -19,6 +19,10 @@ This script:
 import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
 
 SEED = 520
 
@@ -42,9 +46,23 @@ remove_features = [
     "Dst Port",
     "Timestamp",
     "Pkt Len Var",
+    "Fwd Byts/b Avg",
+    "Fwd Pkts/b Avg",
+    "Fwd Blk Rate Avg",
+    "Bwd Byts/b Avg",
+    "Bwd Pkts/b Avg",
+    "Bwd Blk Rate Avg",
+    "Init Fwd Win Byts",
+    "Init Bwd Win Byts",
+    "Fwd Act Data Pkts",
+    "Fwd Seg Size Min",
+    "Active Max",
+    "Active Min",
+    "Idle Max",
+    "Idle Min",
 ]
 print(f"Dropping Features: {remove_features}")
-df = df.drop(columns=remove_features)
+df = df.drop(columns=remove_features, errors="ignore")
 print("Non-useful features dropped")
 
 benign_count = (df["Label"] == "Benign").sum()
@@ -128,3 +146,47 @@ print(f"X_val saved to:   {X_val_path}")
 print(f"X_test saved to:  {X_test_path}")
 print(f"y_test saved to:  {y_test_path}")
 print("===================")
+
+# Data stistic graphing
+original_counts = (
+    df["Label"].apply(lambda x: "Attack" if x != "Benign" else "Benign").value_counts()
+)
+
+plt.figure(figsize=(6, 4))
+original_counts.plot(kind="bar", color=["blue", "red"])
+plt.title("Before Undersampling: Benign vs Attack")
+plt.xlabel("Class")
+plt.ylabel("Number of Flows")
+plt.show()
+
+# After undersampling graphing
+undersampled_counts = pd.concat([benign_sampled, df_attack], ignore_index=True)
+undersampled_counts = (
+    undersampled_counts["Label"]
+    .apply(lambda x: "Attack" if x != "Benign" else "Benign")
+    .value_counts()
+)
+
+plt.figure(figsize=(6, 4))
+undersampled_counts.plot(kind="bar", color=["blue", "red"])
+plt.title("After Undersampling: Benign vs Attack")
+plt.xlabel("Class")
+plt.ylabel("Number of Flows")
+plt.show()
+
+df_final = pd.concat([benign_sampled, df_attack], ignore_index=True)
+print(df_final.describe())
+
+plt.figure(figsize=(12,10))
+corr_matrix = df_final.drop(columns=['Label']).corr()
+sns.heatmap(corr_matrix, cmap="coolwarm", linewidths=0.5)
+plt.title("Feature Correlation Heatmap")
+plt.show()
+
+feature_variances = df_final.drop(columns=['Label']).var().sort_values(ascending=False)
+print("Top 5 Features with Highest Variance:")
+print(feature_variances.head(5))
+
+skewness = df_final.drop(columns=['Label']).skew().sort_values(ascending=False)
+print("Feature Skewness (Top 5 most skewed features):")
+print(skewness.head(5))
