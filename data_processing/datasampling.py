@@ -187,6 +187,7 @@ plt.show()
 
 # Feature correlation Heatmap graph
 df_final = pd.concat([benign_sampled, df_attack], ignore_index=True)
+print("Data Describe:\n")
 print(df_final.describe())
 
 plt.figure(figsize=(12,10))
