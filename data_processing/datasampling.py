@@ -121,8 +121,8 @@ print("")
 print(f"Final Test Set (Benign + Malicious): {len(benign_test) + total_attack} flows")
 print("===================")
 
-# Preparing X (features) and Y (labels) for sklearn
-print("Processing splitted Data into usable form for sklearn......")
+# Preparing X (features) and Y (labels) for ML
+print("Processing splitted Data into usable form for ML......")
 X_train = benign_train.drop(columns=["Label"])
 X_val = benign_val.drop(columns=["Label"])
 X_test = test_set.drop(columns=["Label"])
