@@ -81,6 +81,10 @@ df_attack = df[df["Label"] != "Benign"]
 
 benign_sampled = df_benign.sample(n=benign_sample_size, random_state=SEED)
 
+df_final = pd.concat([benign_sampled, df_attack])
+df_final['Label'] = df_final['Label'].astype(str).str.replace(' ', '_')
+
+
 print("===================")
 print(f"Sampled Benign flows")
 print(f"Size of Benign Samples: {len(benign_sampled)}")
@@ -89,45 +93,57 @@ print("===================\n")
 
 print("Splitting Data......\n")
 # Spliting data: 70% benign → Training; 15% benign → Validation; 15% benign → Test benign + 100% Test attack
-benign_train, benign_temp = train_test_split(
-    benign_sampled, test_size=0.3, random_state=SEED, shuffle=True
-)
-benign_train = pd.DataFrame(benign_train)
-benign_temp = pd.DataFrame(benign_temp)
-benign_val, benign_test = train_test_split(
-    benign_temp, test_size=0.5, random_state=SEED, shuffle=True
-)
-benign_val = pd.DataFrame(benign_val)
-benign_test = pd.DataFrame(benign_test)
-test_set = pd.concat([benign_test, df_attack], ignore_index=True)
+# benign_train, benign_temp = train_test_split(
+#     benign_sampled, test_size=0.3, random_state=SEED, shuffle=True
+# )
+# benign_train = pd.DataFrame(benign_train)
+# benign_temp = pd.DataFrame(benign_temp)
+# benign_val, benign_test = train_test_split(
+#     benign_temp, test_size=0.5, random_state=SEED, shuffle=True
+# )
+# benign_val = pd.DataFrame(benign_val)
+# benign_test = pd.DataFrame(benign_test)
+# test_set = pd.concat([benign_test, df_attack], ignore_index=True)
+train, testNval = train_test_split(df_final, test_size=0.3, random_state=SEED, shuffle=True)
+testNval = pd.DataFrame(testNval)
+train = pd.DataFrame(train)
+test, val = train_test_split(testNval, test_size=0.1, random_state=SEED, shuffle=True)
+test = pd.DataFrame(test)
+val = pd.DataFrame(val)
 
 total_benign_sampled = len(benign_sampled)
 total_attack = len(df_attack)
 
-print("===================")
-print("Benign Samples Split:")
-print(
-    f"  Train      : {len(benign_train)} flows ({len(benign_train) / total_benign_sampled * 100:.2f}%)"
-)
-print(
-    f"  Validation : {len(benign_val)} flows ({len(benign_val) / total_benign_sampled * 100:.2f}%)"
-)
-print(
-    f"  Test       : {len(benign_test)} flows ({len(benign_test) / total_benign_sampled * 100:.2f}%)"
-)
-print("")
-print(f"Malicious Samples (for Test only): {total_attack} flows")
-print("")
-print(f"Final Test Set (Benign + Malicious): {len(benign_test) + total_attack} flows")
-print("===================")
+# print("===================")
+# print("Benign Samples Split:")
+# print(
+#     f"  Train      : {len(benign_train)} flows ({len(benign_train) / total_benign_sampled * 100:.2f}%)"
+# )
+# print(
+#     f"  Validation : {len(benign_val)} flows ({len(benign_val) / total_benign_sampled * 100:.2f}%)"
+# )
+# print(
+#     f"  Test       : {len(benign_test)} flows ({len(benign_test) / total_benign_sampled * 100:.2f}%)"
+# )
+# print("")
+# print(f"Malicious Samples (for Test only): {total_attack} flows")
+# print("")
+# print(f"Final Test Set (Benign + Malicious): {len(benign_test) + total_attack} flows")
+# print("===================")
 
 # Preparing X (features) and Y (labels) for ML
+# print("Processing splitted Data into usable form for ML......")
+# X_train = benign_train.drop(columns=["Label"])
+# X_val = benign_val.drop(columns=["Label"])
+# X_test = test_set.drop(columns=["Label"])
+# y_test = test_set["Label"]
+# print("======Done======\n")
 print("Processing splitted Data into usable form for ML......")
-X_train = benign_train.drop(columns=["Label"])
-X_val = benign_val.drop(columns=["Label"])
-X_test = test_set.drop(columns=["Label"])
-y_test = test_set["Label"]
-print("======Done======\n")
+# X_train = train.drop(columns=["Label"])
+# X_val = val.drop(columns=["Label"])
+X_test = test.drop(columns=["Label"])
+y_test = test["Label"]
+
 
 # Saving processed data into CSV files
 print("Saving processed data into CSV files...")
@@ -136,8 +152,12 @@ X_val_path = f"{cleaned_friday_root}/X_val.csv"
 X_test_path = f"{cleaned_friday_root}/X_test.csv"
 y_test_path = f"{cleaned_friday_root}/y_test.csv"
 
-X_train.to_csv(X_train_path, index=False)
-X_val.to_csv(X_val_path, index=False)
+# X_train.to_csv(X_train_path, index=False)
+# X_val.to_csv(X_val_path, index=False)
+# X_test.to_csv(X_test_path, index=False)
+# y_test.to_csv(y_test_path, index=False)
+train.to_csv(X_train_path, index=False)
+val.to_csv(X_val_path, index=False)
 X_test.to_csv(X_test_path, index=False)
 y_test.to_csv(y_test_path, index=False)
 print("===================")
@@ -166,27 +186,29 @@ undersampled_counts = (
     .apply(lambda x: "Attack" if x != "Benign" else "Benign")
     .value_counts()
 )
-train_size = len(benign_train)
-val_size = len(benign_val)
-benign_test_size = len(benign_test)
-attack_size = len(df_attack)
-total_test_size = benign_test_size + attack_size
-split_names = ['Train (Benign)', 'Validation (Benign)', 'Test (Benign)', 'Test (Attack)']
-split_sizes = [train_size, val_size, benign_test_size, attack_size]
-plt.figure(figsize=(8,5))
-bars = plt.bar(split_names, split_sizes, color=['blue', 'cyan', 'green', 'red'])
-plt.title("Final Data Split: Train, Validation, and Test Sets")
-plt.xlabel("Dataset Split")
-plt.ylabel("Number of Flows")
-plt.grid(axis='y', linestyle='--', alpha=0.7)
-plt.tight_layout()
-for bar in bars:
-    height = bar.get_height()
-    plt.text(bar.get_x() + bar.get_width()/2.0, height, f'{height}', ha='center', va='bottom')
-plt.show()
+# train_size = len(benign_train)
+# val_size = len(benign_val)
+# benign_test_size = len(benign_test)
+# train_size = len(benign_train)
+# val_size = len(benign_val)
+# benign_test_size = len(benign_test)
+# attack_size = len(df_attack)
+# total_test_size = benign_test_size + attack_size
+# split_names = ['Train (Benign)', 'Validation (Benign)', 'Test (Benign)', 'Test (Attack)']
+# split_sizes = [train_size, val_size, benign_test_size, attack_size]
+# plt.figure(figsize=(8,5))
+# bars = plt.bar(split_names, split_sizes, color=['blue', 'cyan', 'green', 'red'])
+# plt.title("Final Data Split: Train, Validation, and Test Sets")
+# plt.xlabel("Dataset Split")
+# plt.ylabel("Number of Flows")
+# plt.grid(axis='y', linestyle='--', alpha=0.7)
+# plt.tight_layout()
+# for bar in bars:
+#     height = bar.get_height()
+#     plt.text(bar.get_x() + bar.get_width()/2.0, height, f'{height}', ha='center', va='bottom')
+# plt.show()
 
 # Feature correlation Heatmap graph
-df_final = pd.concat([benign_sampled, df_attack], ignore_index=True)
 plt.figure(figsize=(12,10))
 corr_matrix = df_final.drop(columns=['Label']).corr()
 sns.heatmap(corr_matrix, cmap="coolwarm", linewidths=0.5)
