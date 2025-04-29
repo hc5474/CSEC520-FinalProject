@@ -1,6 +1,6 @@
 """
-AI Usage Statement
-Tools Used: ChatGPT
+AI Usage Statement (Han Chen)
+Tools Used: ChatGPT 
     - Usage: Code runtime info printing
     - Verification: Code are manually written
 Prohibited Use Compliance: Confirmed
@@ -10,13 +10,13 @@ This script:
     - Loads the full labeled CSV file containing network traffic flow data.
     - Drops non-useful metadata features (e.g., IP addresses, ports, timestamps).
     - Balances the dataset by undersampling benign flows to a 2:1 ratio relative to malicious flows.
-    - Splits the benign flows into training (70%), validation (15%), and test (15%) sets.
-    - Combines the test benign flows with all malicious flows to form a final test set.
+    - Splits the benign flows into training (70%), validation (20%), and test (10%) sets.
     - Separates features (X) and labels (y) for model training and evaluation.
     - Saves the processed datasets (X_train, X_val, X_test, y_test) as CSV files.
 """
 
 import pandas as pd
+import numpy as np
 import os
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
@@ -39,32 +39,28 @@ print("Data Loaded into dataframe")
 
 # Dropping features that won't be very helpful for training the autoencoder
 remove_features = [
-    "Flow ID",
-    "Src IP",
-    "Src Port",
-    "Dst IP",
-    "Dst Port",
-    "Timestamp",
-    "Pkt Len Var",
-    "Fwd Byts/b Avg",
-    "Fwd Pkts/b Avg",
-    "Fwd Blk Rate Avg",
-    "Bwd Byts/b Avg",
-    "Bwd Pkts/b Avg",
-    "Bwd Blk Rate Avg",
-    "Init Fwd Win Byts",
-    "Init Bwd Win Byts",
-    "Fwd Act Data Pkts",
-    "Fwd Seg Size Min",
-    "Active Max",
-    "Active Min",
-    "Idle Max",
-    "Idle Min",
-]
+     "Flow ID",
+     "Src IP",
+     "Dst IP",
+     "Timestamp",
+ ]
 print(f"Dropping Features: {remove_features}")
 df = df.drop(columns=remove_features, errors="ignore")
 print("Non-useful features dropped")
 
+df = df.drop_duplicates()
+
+feature_skewness = df.drop(columns=['Label']).skew()
+skew_threshold = 1.0
+log_features = feature_skewness[feature_skewness.abs() > skew_threshold].index.tolist()
+
+print("Features selected for log1p transformation:")
+print(log_features)
+
+# Apply log1p transformation
+for feature in log_features:
+    if feature in df.columns:
+        df[feature] = np.log1p(df[feature])
 benign_count = (df["Label"] == "Benign").sum()
 attack_count = (df["Label"] != "Benign").sum()
 
@@ -82,6 +78,24 @@ df_attack = df[df["Label"] != "Benign"]
 benign_sampled = df_benign.sample(n=benign_sample_size, random_state=SEED)
 
 df_final = pd.concat([benign_sampled, df_attack])
+
+def drop_highly_correlated(df, threshold=0.95):
+    corr_matrix = df.corr().abs()
+    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+    to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
+    return df.drop(columns=to_drop), to_drop
+
+df_final_features = df_final.drop(columns=['Label'])
+df_final_features, dropped_features = drop_highly_correlated(df_final_features)
+
+# Reattach label
+df_final = pd.concat([df_final_features, df_final['Label']], axis=1)
+
+print("===================")
+print("Dropped redundant features due to high correlation:")
+print(dropped_features)
+print("===================")
+
 df_final['Label'] = df_final['Label'].astype(str).str.replace(' ', '_')
 
 
@@ -92,18 +106,7 @@ print(f"Size of Attack Data: {len(df_attack)}")
 print("===================\n")
 
 print("Splitting Data......\n")
-# Spliting data: 70% benign → Training; 15% benign → Validation; 15% benign → Test benign + 100% Test attack
-# benign_train, benign_temp = train_test_split(
-#     benign_sampled, test_size=0.3, random_state=SEED, shuffle=True
-# )
-# benign_train = pd.DataFrame(benign_train)
-# benign_temp = pd.DataFrame(benign_temp)
-# benign_val, benign_test = train_test_split(
-#     benign_temp, test_size=0.5, random_state=SEED, shuffle=True
-# )
-# benign_val = pd.DataFrame(benign_val)
-# benign_test = pd.DataFrame(benign_test)
-# test_set = pd.concat([benign_test, df_attack], ignore_index=True)
+
 train, testNval = train_test_split(df_final, test_size=0.3, random_state=SEED, shuffle=True)
 testNval = pd.DataFrame(testNval)
 train = pd.DataFrame(train)
@@ -114,33 +117,7 @@ val = pd.DataFrame(val)
 total_benign_sampled = len(benign_sampled)
 total_attack = len(df_attack)
 
-# print("===================")
-# print("Benign Samples Split:")
-# print(
-#     f"  Train      : {len(benign_train)} flows ({len(benign_train) / total_benign_sampled * 100:.2f}%)"
-# )
-# print(
-#     f"  Validation : {len(benign_val)} flows ({len(benign_val) / total_benign_sampled * 100:.2f}%)"
-# )
-# print(
-#     f"  Test       : {len(benign_test)} flows ({len(benign_test) / total_benign_sampled * 100:.2f}%)"
-# )
-# print("")
-# print(f"Malicious Samples (for Test only): {total_attack} flows")
-# print("")
-# print(f"Final Test Set (Benign + Malicious): {len(benign_test) + total_attack} flows")
-# print("===================")
-
-# Preparing X (features) and Y (labels) for ML
-# print("Processing splitted Data into usable form for ML......")
-# X_train = benign_train.drop(columns=["Label"])
-# X_val = benign_val.drop(columns=["Label"])
-# X_test = test_set.drop(columns=["Label"])
-# y_test = test_set["Label"]
-# print("======Done======\n")
 print("Processing splitted Data into usable form for ML......")
-# X_train = train.drop(columns=["Label"])
-# X_val = val.drop(columns=["Label"])
 X_test = test.drop(columns=["Label"])
 y_test = test["Label"]
 
@@ -152,10 +129,6 @@ X_val_path = f"{cleaned_friday_root}/X_val.csv"
 X_test_path = f"{cleaned_friday_root}/X_test.csv"
 y_test_path = f"{cleaned_friday_root}/y_test.csv"
 
-# X_train.to_csv(X_train_path, index=False)
-# X_val.to_csv(X_val_path, index=False)
-# X_test.to_csv(X_test_path, index=False)
-# y_test.to_csv(y_test_path, index=False)
 train.to_csv(X_train_path, index=False)
 val.to_csv(X_val_path, index=False)
 X_test.to_csv(X_test_path, index=False)
@@ -167,68 +140,8 @@ print(f"X_test saved to:  {X_test_path}")
 print(f"y_test saved to:  {y_test_path}")
 print("===================")
 
-# Data stistic graphing
-original_counts = (
-    df["Label"].apply(lambda x: "Attack" if x != "Benign" else "Benign").value_counts()
-)
-
-plt.figure(figsize=(6, 4))
-original_counts.plot(kind="bar", color=["blue", "red"])
-plt.title("Before Undersampling: Benign vs Attack")
-plt.xlabel("Class")
-plt.ylabel("Number of Flows")
-plt.show()
-
-# After undersampling graphing
-undersampled_counts = pd.concat([benign_sampled, df_attack], ignore_index=True)
-undersampled_counts = (
-    undersampled_counts["Label"]
-    .apply(lambda x: "Attack" if x != "Benign" else "Benign")
-    .value_counts()
-)
-# train_size = len(benign_train)
-# val_size = len(benign_val)
-# benign_test_size = len(benign_test)
-# train_size = len(benign_train)
-# val_size = len(benign_val)
-# benign_test_size = len(benign_test)
-# attack_size = len(df_attack)
-# total_test_size = benign_test_size + attack_size
-# split_names = ['Train (Benign)', 'Validation (Benign)', 'Test (Benign)', 'Test (Attack)']
-# split_sizes = [train_size, val_size, benign_test_size, attack_size]
-# plt.figure(figsize=(8,5))
-# bars = plt.bar(split_names, split_sizes, color=['blue', 'cyan', 'green', 'red'])
-# plt.title("Final Data Split: Train, Validation, and Test Sets")
-# plt.xlabel("Dataset Split")
-# plt.ylabel("Number of Flows")
-# plt.grid(axis='y', linestyle='--', alpha=0.7)
-# plt.tight_layout()
-# for bar in bars:
-#     height = bar.get_height()
-#     plt.text(bar.get_x() + bar.get_width()/2.0, height, f'{height}', ha='center', va='bottom')
-# plt.show()
-
-# Feature correlation Heatmap graph
-plt.figure(figsize=(12,10))
-corr_matrix = df_final.drop(columns=['Label']).corr()
-sns.heatmap(corr_matrix, cmap="coolwarm", linewidths=0.5)
-plt.title("Feature Correlation Heatmap")
-plt.show()
-
-# Feature variances
-top_variances = df_final.drop(columns=['Label']).var().sort_values(ascending=False).head(10)
-plt.figure(figsize=(10,5))
-top_variances.plot(kind='bar', color='purple')
-plt.title("Top 10 Features with Highest Variance")
-plt.ylabel("Variance")
-plt.xlabel("Feature")
-plt.xticks(rotation=45, ha='right')
-plt.grid(axis='y', linestyle='--', alpha=0.7)
-plt.tight_layout()
-plt.show()
-
 # Feature data skewness graph
-top_skewness = df_final.drop(columns=['Label']).skew().sort_values(ascending=False).head(10)
+top_skewness = df_final.drop(columns=['Label']).skew().sort_values(ascending=False).head(20)
 
 plt.figure(figsize=(10,5))
 top_skewness.plot(kind='bar', color='orange')
@@ -238,4 +151,11 @@ plt.xlabel("Feature")
 plt.xticks(rotation=45, ha='right')
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.tight_layout()
+plt.show()
+
+# Feature correlation Heatmap graph
+plt.figure(figsize=(12,10))
+corr_matrix = df_final.drop(columns=['Label']).corr()
+sns.heatmap(corr_matrix, cmap="coolwarm", linewidths=0.5)
+plt.title("Feature Correlation Heatmap")
 plt.show()

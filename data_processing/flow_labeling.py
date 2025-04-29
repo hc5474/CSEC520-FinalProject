@@ -1,6 +1,6 @@
 """
-AI Usage Statement
-Tools Used: ChatGPT
+AI Usage Statement (Han Chen)
+Tools Used: ChatGPT 
     - Usage: Parsing the attack window based on Article's table
     - Verification: Checked the accuracy of the parsed info. Fixed some error.
 Prohibited Use Compliance: Confirmed
