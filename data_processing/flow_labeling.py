@@ -15,11 +15,13 @@ import os
 import pandas as pd
 from datetime import datetime
 
-flow_root = r"D:\CSEC520-Project\Friday_only\Flow"
-flow_labeled_root = r"D:\CSEC520-Project\CSEC520-FinalProject\CICFlowmeter_Processed_Friday_flow_labeled"
+#flow_root = r"D:\CSEC520-Project\Original Network Traffic and Log data\Friday_Only\flow"
+flow_root = r"D:\CSEC520-Project\Original Network Traffic and Log data\Wednesday-28-02-2018\flow"
+flow_labeled_root = r"D:\CSEC520-Project\CSEC520-FinalProject\CICFlowmeter_Processed_flow_labeled"
 os.makedirs(flow_labeled_root, exist_ok=True)
 
-final_output_csv = os.path.join(flow_labeled_root, "Friday_Full_Labeled.csv")
+#final_output_csv = os.path.join(flow_labeled_root, "Friday_Full_Labeled.csv")
+final_output_csv = os.path.join(flow_labeled_root, "Wednesday_022818_Labeled.csv")
 
 attack_windows = [
     {
@@ -89,7 +91,27 @@ attack_windows = [
         "day": "Fri-02-03-2018",
         "start_time": "14:24",
         "end_time": "15:55"
-    }
+    },
+    {
+        "attack_name": "Infiltration",
+        "attacker_ips": ["13.58.225.34"],
+        "victim_ips": [
+            "18.221.148.137", "172.31.69.24"
+        ],
+        "day": "Wed-28-02-2018",
+        "start_time": "13:42",
+        "end_time": "14:40"
+    },
+    {
+        "attack_name": "Infiltration",
+        "attacker_ips": ["13.58.225.34"],
+        "victim_ips": [
+            "18.221.148.137", "172.31.69.24"
+        ],
+        "day": "Wed-28-02-2018",
+        "start_time": "10:50",
+        "end_time": "12:05"
+    },
 ]
 
 def label_flow(row):
@@ -100,7 +122,10 @@ def label_flow(row):
     if pd.isna(timestamp):
         return "Benign"
 
-    date_str = timestamp.strftime("Fri-%d-%m-%Y")
+    # date_str = timestamp.strftime("Fri-%d-%m-%Y")
+    date_str = timestamp.strftime("Wed-%d-%m-%Y")
+
+
     time_obj = timestamp.time()
 
     for attack in attack_windows:
@@ -144,10 +169,10 @@ for day_folder in os.listdir(flow_root):
         print(f"Processed file: {flow_csv}")
         all_flows.append(df)
 
-print("Merging all Fridays together...")
+print("Merging all together...")
 
 full_dataset = pd.concat(all_flows, ignore_index=True)
 
 full_dataset.to_csv(final_output_csv, index=False)
 
-print(f"Full Friday dataset saved to {final_output_csv}")
+print(f"Full labeled dataset saved to {final_output_csv}")

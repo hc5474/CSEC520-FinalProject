@@ -27,14 +27,16 @@ import seaborn as sns
 SEED = 520
 
 # Paths for inputs and outputs
-full_label_friday_path = (
-    "./CICFlowMeter_Processed_Friday_flow_labeled/Friday_two_days_Full_Labeled.csv"
-)
-cleaned_friday_root = "./processed_data"
-os.makedirs(cleaned_friday_root, exist_ok=True)
+# full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Friday_two_days_Full_Labeled.csv")
+# cleaned_root = "./processed_friday_data"
+full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Wednesday_022818_Labeled.csv")
+cleaned_root = "./processed_wednesday_data"
+
+
+os.makedirs(cleaned_root, exist_ok=True)
 
 print("Loading Data......")
-df = pd.read_csv(full_label_friday_path)  # Load the entire dataset into a dataframe
+df = pd.read_csv(full_label_path)  # Load the entire dataset into a dataframe
 print("Data Loaded into dataframe")
 
 # Dropping features that won't be very helpful for training the autoencoder
@@ -43,6 +45,7 @@ remove_features = [
      "Src IP",
      "Dst IP",
      "Timestamp",
+     "RST Flag Cnt" # Dropped bc too high skewed
  ]
 print(f"Dropping Features: {remove_features}")
 df = df.drop(columns=remove_features, errors="ignore")
@@ -84,7 +87,6 @@ def drop_highly_correlated(df, threshold=0.95):
     upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
     to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
     return df.drop(columns=to_drop), to_drop
-
 df_final_features = df_final.drop(columns=['Label'])
 df_final_features, dropped_features = drop_highly_correlated(df_final_features)
 
@@ -124,10 +126,10 @@ y_test = test["Label"]
 
 # Saving processed data into CSV files
 print("Saving processed data into CSV files...")
-X_train_path = f"{cleaned_friday_root}/X_train.csv"
-X_val_path = f"{cleaned_friday_root}/X_val.csv"
-X_test_path = f"{cleaned_friday_root}/X_test.csv"
-y_test_path = f"{cleaned_friday_root}/y_test.csv"
+X_train_path = f"{cleaned_root}/X_train.csv"
+X_val_path = f"{cleaned_root}/X_val.csv"
+X_test_path = f"{cleaned_root}/X_test.csv"
+y_test_path = f"{cleaned_root}/y_test.csv"
 
 train.to_csv(X_train_path, index=False)
 val.to_csv(X_val_path, index=False)
