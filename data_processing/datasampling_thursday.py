@@ -1,19 +1,5 @@
 """
-AI Usage Statement (Han Chen)
-Tools Used: ChatGPT 
-    - Usage: Code runtime info printing
-    - Verification: Code are manually written
-Prohibited Use Compliance: Confirmed
-
-This script is for processing labled CICFlowMeter Friday dataset.
-This script:
-    - Loads the full labeled CSV file containing network traffic flow data.
-    - Drops non-useful metadata features (e.g., IP addresses, ports, timestamps).
-    - Feature Engineer
-    - Balances the dataset by undersampling benign flows to a 2:1 ratio relative to malicious flows.
-    - Splits the benign flows into training (70%), validation (20%), and test (10%) sets.
-    - Separates features (X) and labels (y) for model training and evaluation.
-    - Saves the processed datasets (X_train, X_val, X_test, y_test) as CSV files.
+Copy of datasampling.py, but this is to handle another day's data which will have a different splitting strategy.
 """
 
 import pandas as pd
@@ -28,8 +14,7 @@ import seaborn as sns
 SEED = 520
 
 # Paths for inputs and outputs
-# full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Friday_two_days_Full_Labeled.csv")
-# cleaned_root = "./processed_friday_data"
+
 full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Thursday_220218_Labeled.csv")
 cleaned_root = "./processed_thursday_data"
 
@@ -110,38 +95,17 @@ print("===================\n")
 
 print("Splitting Data......\n")
 
-train, testNval = train_test_split(df_final, test_size=0.3, random_state=SEED, shuffle=True)
-testNval = pd.DataFrame(testNval)
-train = pd.DataFrame(train)
-test, val = train_test_split(testNval, test_size=0.1, random_state=SEED, shuffle=True)
-test = pd.DataFrame(test)
-val = pd.DataFrame(val)
-
-total_benign_sampled = len(benign_sampled)
-total_attack = len(df_attack)
-
-print("Processing splitted Data into usable form for ML......")
-X_test = test.drop(columns=["Label"])
-y_test = test["Label"]
+# =================
+# TO DO
+# ==============
 
 
 # Saving processed data into CSV files
 print("Saving processed data into CSV files...")
-X_train_path = f"{cleaned_root}/X_train.csv"
-X_val_path = f"{cleaned_root}/X_val.csv"
-X_test_path = f"{cleaned_root}/X_test.csv"
-y_test_path = f"{cleaned_root}/y_test.csv"
 
-train.to_csv(X_train_path, index=False)
-val.to_csv(X_val_path, index=False)
-X_test.to_csv(X_test_path, index=False)
-y_test.to_csv(y_test_path, index=False)
-print("===================")
-print(f"X_train saved to: {X_train_path}")
-print(f"X_val saved to:   {X_val_path}")
-print(f"X_test saved to:  {X_test_path}")
-print(f"y_test saved to:  {y_test_path}")
-print("===================")
+# =================
+# TO DO
+# ==============
 
 # Feature data skewness graph
 top_skewness = df_final.drop(columns=['Label']).skew().sort_values(ascending=False).head(20)

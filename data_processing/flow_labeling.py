@@ -16,12 +16,12 @@ import pandas as pd
 from datetime import datetime
 
 #flow_root = r"D:\CSEC520-Project\Original Network Traffic and Log data\Friday_Only\flow"
-flow_root = r"D:\CSEC520-Project\Original Network Traffic and Log data\Wednesday-28-02-2018\flow"
+flow_root = r"D:\CSEC520-Project\Original Network Traffic and Log data\Thursday-22-02-2018\flow"
 flow_labeled_root = r"D:\CSEC520-Project\CSEC520-FinalProject\CICFlowmeter_Processed_flow_labeled"
 os.makedirs(flow_labeled_root, exist_ok=True)
 
 #final_output_csv = os.path.join(flow_labeled_root, "Friday_Full_Labeled.csv")
-final_output_csv = os.path.join(flow_labeled_root, "Wednesday_022818_Labeled.csv")
+final_output_csv = os.path.join(flow_labeled_root, "Thursday_220218_Labeled.csv")
 
 attack_windows = [
     {
@@ -112,6 +112,36 @@ attack_windows = [
         "start_time": "10:50",
         "end_time": "12:05"
     },
+    {
+        "attack_name": "Brute_Force_Web",
+        "attacker_ips": ["18.218.115.60"],
+        "victim_ips": [
+            "18.218.83.150", "172.31.69.28"
+        ],
+        "day": "Thurs-22-02-2018",
+        "start_time": "10:17",
+        "end_time": "11:24"
+    },
+    {
+        "attack_name": "Brute_Force_XSS",
+        "attacker_ips": ["18.218.115.60"],
+        "victim_ips": [
+            "18.218.83.150", "172.31.69.28"
+        ],
+        "day": "Thurs-22-02-2018",
+        "start_time": "13:50",
+        "end_time": "14:29"
+    },
+    {
+        "attack_name": "SQL_Injection",
+        "attacker_ips": ["18.218.115.60"],
+        "victim_ips": [
+            "18.218.83.150", "172.31.69.28"
+        ],
+        "day": "Thurs-22-02-2018",
+        "start_time": "16:15",
+        "end_time": "16:29"
+    }
 ]
 
 def label_flow(row):
@@ -123,7 +153,7 @@ def label_flow(row):
         return "Benign"
 
     # date_str = timestamp.strftime("Fri-%d-%m-%Y")
-    date_str = timestamp.strftime("Wed-%d-%m-%Y")
+    date_str = timestamp.strftime("Thurs-%d-%m-%Y")
 
 
     time_obj = timestamp.time()
