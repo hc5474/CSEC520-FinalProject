@@ -28,10 +28,10 @@ import seaborn as sns
 SEED = 520
 
 # Paths for inputs and outputs
-# full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Friday_two_days_Full_Labeled.csv")
-# cleaned_root = "./processed_friday_data"
-full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Thursday_220218_Labeled.csv")
-cleaned_root = "./processed_thursday_data"
+full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Friday_two_days_Full_Labeled.csv")
+cleaned_root = "./processed_friday_data"
+#full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Thursday_220218_Labeled.csv")
+#cleaned_root = "./processed_thursday_data"
 
 
 os.makedirs(cleaned_root, exist_ok=True)
@@ -73,6 +73,23 @@ print(f"There are {benign_count} Benign flow")
 print(f"There are {attack_count} Malicious flow")
 print("===================")
 
+
+def drop_highly_correlated(df, threshold=0.95):
+    corr_matrix = df.corr().abs()
+    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+    to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
+    return df.drop(columns=to_drop), to_drop
+df_features = df.drop(columns=['Label'])
+df_features, dropped_features = drop_highly_correlated(df_features)
+
+# Reattach label
+df = pd.concat([df_features, df['Label']], axis=1)
+
+print("===================")
+print("Dropped redundant features due to high correlation:")
+print(dropped_features)
+print("===================")
+
 print("Undersampling Benign flows to be ratio 2:1 to Malicious Flow......")
 # Undersample benign flows to achieve a 2:1 Benign-to-attack ratio
 benign_sample_size = attack_count * 2
@@ -82,22 +99,6 @@ df_attack = df[df["Label"] != "Benign"]
 benign_sampled = df_benign.sample(n=benign_sample_size, random_state=SEED)
 
 df_final = pd.concat([benign_sampled, df_attack])
-
-def drop_highly_correlated(df, threshold=0.95):
-    corr_matrix = df.corr().abs()
-    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
-    to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
-    return df.drop(columns=to_drop), to_drop
-df_final_features = df_final.drop(columns=['Label'])
-df_final_features, dropped_features = drop_highly_correlated(df_final_features)
-
-# Reattach label
-df_final = pd.concat([df_final_features, df_final['Label']], axis=1)
-
-print("===================")
-print("Dropped redundant features due to high correlation:")
-print(dropped_features)
-print("===================")
 
 df_final['Label'] = df_final['Label'].astype(str).str.replace(' ', '_')
 
