@@ -54,40 +54,12 @@ print("Non-useful features dropped")
 
 df = df.drop_duplicates()
 
-feature_skewness = df.drop(columns=['Label']).skew()
-skew_threshold = 1.0
-log_features = feature_skewness[feature_skewness.abs() > skew_threshold].index.tolist()
-
-print("Features selected for log1p transformation:")
-print(log_features)
-
-# Apply log1p transformation
-for feature in log_features:
-    if feature in df.columns:
-        df[feature] = np.log1p(df[feature])
 benign_count = (df["Label"] == "Benign").sum()
 attack_count = (df["Label"] != "Benign").sum()
 
 print("===================")
 print(f"There are {benign_count} Benign flow")
 print(f"There are {attack_count} Malicious flow")
-print("===================")
-
-
-def drop_highly_correlated(df, threshold=0.95):
-    corr_matrix = df.corr().abs()
-    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
-    to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
-    return df.drop(columns=to_drop), to_drop
-df_features = df.drop(columns=['Label'])
-df_features, dropped_features = drop_highly_correlated(df_features)
-
-# Reattach label
-df = pd.concat([df_features, df['Label']], axis=1)
-
-print("===================")
-print("Dropped redundant features due to high correlation:")
-print(dropped_features)
 print("===================")
 
 print("Undersampling Benign flows to be ratio 2:1 to Malicious Flow......")
@@ -99,6 +71,34 @@ df_attack = df[df["Label"] != "Benign"]
 benign_sampled = df_benign.sample(n=benign_sample_size, random_state=SEED)
 
 df_final = pd.concat([benign_sampled, df_attack])
+
+feature_skewness = df_final.drop(columns=['Label']).skew()
+skew_threshold = 1.0
+log_features = feature_skewness[feature_skewness.abs() > skew_threshold].index.tolist()
+
+print("Features selected for log1p transformation:")
+print(log_features)
+
+# Apply log1p transformation
+for feature in log_features:
+    if feature in df.columns:
+        df_final[feature] = np.log1p(df_final[feature])
+
+def drop_highly_correlated(df, threshold=0.95):
+    corr_matrix = df.corr().abs()
+    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+    to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
+    return df.drop(columns=to_drop), to_drop
+df_final_features = df_final.drop(columns=['Label'])
+df_final_features, dropped_features = drop_highly_correlated(df_final_features)
+
+# Reattach label
+df_final = pd.concat([df_final_features, df_final['Label']], axis=1)
+
+print("===================")
+print("Dropped redundant features due to high correlation:")
+print(dropped_features)
+print("===================")
 
 df_final['Label'] = df_final['Label'].astype(str).str.replace(' ', '_')
 
