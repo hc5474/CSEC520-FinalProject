@@ -46,7 +46,9 @@ remove_features = [
      "Src IP",
      "Dst IP",
      "Timestamp",
-     "RST Flag Cnt" # Dropped bc too high skewed
+     "RST Flag Cnt", # Dropped bc too high skewed
+     "Src Port",
+     "Dst Port"
  ]
 print(f"Dropping Features: {remove_features}")
 df = df.drop(columns=remove_features, errors="ignore")
