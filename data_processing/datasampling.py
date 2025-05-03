@@ -30,8 +30,8 @@ SEED = 520
 # Paths for inputs and outputs
 full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Friday_two_days_Full_Labeled.csv")
 cleaned_root = "./processed_friday_data"
-#full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Thursday_220218_Labeled.csv")
-#cleaned_root = "./processed_thursday_data"
+# full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Thursday_220218_Labeled.csv")
+# cleaned_root = "./processed_thursday_data"
 
 
 os.makedirs(cleaned_root, exist_ok=True)
@@ -100,6 +100,12 @@ df_final = pd.concat([df_final_features, df_final['Label']], axis=1)
 print("===================")
 print("Dropped redundant features due to high correlation:")
 print(dropped_features)
+# Save dropped features to a file
+dropped_features_path = f"{cleaned_root}/dropped_features.txt"
+with open(dropped_features_path, "w") as file:
+    for feature in dropped_features:
+        file.write(f"{feature}\n")
+print(f"Dropped features saved to: {dropped_features_path}")
 print("===================")
 
 df_final['Label'] = df_final['Label'].astype(str).str.replace(' ', '_')
