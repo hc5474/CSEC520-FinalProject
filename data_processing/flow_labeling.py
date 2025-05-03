@@ -16,12 +16,15 @@ import pandas as pd
 from datetime import datetime
 
 #flow_root = r"D:\CSEC520-Project\Original Network Traffic and Log data\Friday_Only\flow"
-flow_root = r"D:\CSEC520-Project\Original Network Traffic and Log data\Thursday-22-02-2018\flow"
+# flow_root = r"D:\CSEC520-Project\Original Network Traffic and Log data\Flow\0203"
+flow_root = r"D:\CSEC520-Project\Original Network Traffic and Log data\Flow\0203"
 flow_labeled_root = r"D:\CSEC520-Project\CSEC520-FinalProject\CICFlowmeter_Processed_flow_labeled"
 os.makedirs(flow_labeled_root, exist_ok=True)
 
+day = "Fri"
+
 #final_output_csv = os.path.join(flow_labeled_root, "Friday_Full_Labeled.csv")
-final_output_csv = os.path.join(flow_labeled_root, "Thursday_220218_Labeled.csv")
+final_output_csv = os.path.join(flow_labeled_root, "0203.csv")
 
 attack_windows = [
     {
@@ -41,7 +44,7 @@ attack_windows = [
         "end_time": "14:19"
     },
     {
-        "attack_name": "Brute Force -Web",
+        "attack_name": "Brute_Force_-Web",
         "attacker_ips": ["18.218.115.60"],
         "victim_ips": ["172.31.69.28", "18.218.83.150"],
         "day": "Fri-23-02-2018",
@@ -49,7 +52,7 @@ attack_windows = [
         "end_time": "11:03"
     },
     {
-        "attack_name": "Brute Force -XSS",
+        "attack_name": "Brute_Force_-XSS",
         "attacker_ips": ["18.218.115.60"],
         "victim_ips": ["172.31.69.28", "18.218.83.150"],
         "day": "Fri-23-02-2018",
@@ -57,7 +60,7 @@ attack_windows = [
         "end_time": "14:10"
     },
     {
-        "attack_name": "SQL Injection",
+        "attack_name": "SQL_Injection",
         "attacker_ips": ["18.218.115.60"],
         "victim_ips": ["172.31.69.28", "18.218.83.150"],
         "day": "Fri-23-02-2018",
@@ -152,8 +155,8 @@ def label_flow(row):
     if pd.isna(timestamp):
         return "Benign"
 
-    # date_str = timestamp.strftime("Fri-%d-%m-%Y")
-    date_str = timestamp.strftime("Thurs-%d-%m-%Y")
+    date_str = timestamp.strftime(f"{day}-%d-%m-%Y")
+    # date_str = timestamp.strftime("Thurs-%d-%m-%Y")
 
 
     time_obj = timestamp.time()
