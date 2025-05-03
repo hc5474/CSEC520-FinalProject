@@ -17,6 +17,7 @@ SEED = 520
 
 full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Thursday_220218_Labeled.csv")
 cleaned_root = "./processed_thursday_data"
+redundant_features_path = "./processed_friday_data/dropped_features.txt"
 
 
 os.makedirs(cleaned_root, exist_ok=True)
@@ -31,7 +32,9 @@ remove_features = [
      "Src IP",
      "Dst IP",
      "Timestamp",
-     "RST Flag Cnt" # Dropped bc too high skewed
+     "RST Flag Cnt", # Dropped bc too high skewed
+     "Src Port",
+     "Dst Port"
  ]
 print(f"Dropping Features: {remove_features}")
 df = df.drop(columns=remove_features, errors="ignore")
@@ -68,13 +71,15 @@ benign_sampled = df_benign.sample(n=benign_sample_size, random_state=SEED)
 
 df_final = pd.concat([benign_sampled, df_attack])
 
-def drop_highly_correlated(df, threshold=0.95):
-    corr_matrix = df.corr().abs()
-    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
-    to_drop = [col for col in upper.columns if any(upper[col] > threshold)]
-    return df.drop(columns=to_drop), to_drop
+# Load features to drop from the file
+print(f"Number of features in df_final before dropping: {len(df_final.columns) - 1}")  # Exclude 'Label' column
+# Print the number of features to be dropped
+with open(redundant_features_path, 'r') as file:
+    dropped_features = [line.strip() for line in file.readlines()]
+print(f"Number of features to be dropped: {len(dropped_features)}")
+# Drop the features listed in the file
 df_final_features = df_final.drop(columns=['Label'])
-df_final_features, dropped_features = drop_highly_correlated(df_final_features)
+df_final_features = df_final_features.drop(columns=dropped_features, errors='ignore')
 
 # Reattach label
 df_final = pd.concat([df_final_features, df_final['Label']], axis=1)
@@ -98,14 +103,21 @@ print("Splitting Data......\n")
 # =================
 # TO DO
 # ==============
+# Separating features and labels for test and validation sets
+X_test = df_final.drop(columns=['Label'])
+y_test = df_final['Label']
 
+# Saving validation data into CSV files
+X_val_path = f"{cleaned_root}/X_val.csv"
+y_val_path = f"{cleaned_root}/y_val.csv"
 
-# Saving processed data into CSV files
-print("Saving processed data into CSV files...")
+X_test.to_csv(X_val_path, index=False)
+y_test.to_csv(y_val_path, index=False)
+print("===================")
+print(f"X_val saved to:  {X_val_path}")
+print(f"y_val saved to:  {y_val_path}")
+print("===================")
 
-# =================
-# TO DO
-# ==============
 
 # Feature data skewness graph
 top_skewness = df_final.drop(columns=['Label']).skew().sort_values(ascending=False).head(20)
