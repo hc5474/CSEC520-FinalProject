@@ -105,7 +105,6 @@ print(f"  └─ Malicious:         {(df_test_final['Label'] != 'Benign').sum()}
 print("===================")
 
 
-# Optional: Plot top skewed features
 top_skew = df_tv_final.drop(columns=['Label']).skew().sort_values(ascending=False).head(20)
 plt.figure(figsize=(10,5))
 top_skew.plot(kind='bar', color='orange')
@@ -115,7 +114,6 @@ plt.xticks(rotation=45, ha='right')
 plt.tight_layout()
 plt.show()
 
-# Optional: Heatmap
 plt.figure(figsize=(12,10))
 corr_matrix = df_tv_final.drop(columns=['Label']).corr()
 sns.heatmap(corr_matrix, cmap="coolwarm", linewidths=0.5)
