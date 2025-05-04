@@ -1,11 +1,11 @@
 """
-Copy of datasampling.py, but this is to handle another day's data which will have a different splitting strategy.
+Copy of datasampling.py, but this is to handle another day's data.
+In this case, Thursday's data will be used for testing without training or validation.
 """
 
 import pandas as pd
 import numpy as np
 import os
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import seaborn as sns
 

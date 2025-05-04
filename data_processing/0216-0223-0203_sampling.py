@@ -4,6 +4,12 @@ Tools Used: ChatGPT
     - Usage: Debugging Info printing.
     - Verification: Code are manually written and verified.
 Prohibited Use Compliance: Confirmed
+
+A modified version of the original script designed to evaluate model
+generalization. It uses benign flows from Feb 16 and Feb 23 for training and validation, while the test set is
+exclusively taken from Feb 3, which contains unseen attack samples. The goal is to simulate deployment on
+new traffic. Malicious flows in training are slightly upsampled to balance learning.
+
 """
 
 import pandas as pd
