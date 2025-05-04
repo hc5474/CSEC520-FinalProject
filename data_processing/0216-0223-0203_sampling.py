@@ -1,3 +1,17 @@
+"""
+AI Usage Statement (Han Chen)
+Tools Used: ChatGPT
+    - Usage: Debugging Info printing.
+    - Verification: Code are manually written and verified.
+Prohibited Use Compliance: Confirmed
+
+A modified version of the original script designed to evaluate model
+generalization. It uses benign flows from Feb 16 and Feb 23 for training and validation, while the test set is
+exclusively taken from Feb 3, which contains unseen attack samples. The goal is to simulate deployment on
+new traffic. Malicious flows in training are slightly upsampled to balance learning.
+
+"""
+
 import pandas as pd
 import numpy as np
 import os
@@ -70,7 +84,7 @@ df_tv_features = df_tv_final.drop(columns=["Label"])
 df_tv_features, dropped_features = drop_highly_correlated(df_tv_features)
 df_tv_final = pd.concat([df_tv_features, df_tv_final["Label"]], axis=1)
 
-# Apply same drops/log to test set
+# drops/log to test set
 df_test_final[log_features] = np.log1p(df_test_final[log_features])
 df_test_final = df_test_final.drop(columns=dropped_features, errors="ignore")
 
@@ -89,6 +103,7 @@ X_test.to_csv(f"{cleaned_root}/X_test.csv", index=False)
 y_test.to_csv(f"{cleaned_root}/y_test.csv", index=False)
 print("Saved all processed files.")
 
+# Info Printing
 print("===================")
 print("Final Dataset Summary:")
 print(f"Train set size:         {len(train)}")

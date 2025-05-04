@@ -1,9 +1,14 @@
 """
 AI Usage Statement (Han Chen)
 Tools Used: ChatGPT 
-    - Usage: Code runtime info printing
-    - Verification: Code are manually written
+    - Usage: Code runtime info printing; Consulting how to reduce skewness of data; Graphing the correlation and skewness.
+    - Verification: Code are manually written and verified
 Prohibited Use Compliance: Confirmed
+
+Original script designed to process and sample flow data from Friday-02-16 and Friday-
+02-03. This dataset was used in the initial presentation. All training, validation, and testing sets are
+constructed from these two days. The script performs cleaning, benign flow undersampling, log transformation
+for skewed features, correlation-based feature dropping, and finally saves split datasets into CSV files.
 
 This script is for processing labled CICFlowMeter Friday dataset.
 This script:
@@ -27,11 +32,9 @@ import seaborn as sns
 
 SEED = 520
 
-# Paths for inputs and outputs
+# Define path for inputs and outputs
 full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Friday_two_days_Full_Labeled.csv")
 cleaned_root = "./processed_friday_data"
-# full_label_path = ("./CICFlowMeter_Processed_flow_labeled/Thursday_220218_Labeled.csv")
-# cleaned_root = "./processed_thursday_data"
 
 
 os.makedirs(cleaned_root, exist_ok=True)
