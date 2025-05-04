@@ -4,6 +4,11 @@ Tools Used: N/A
     - Usage: N/A
     - Verification: N/A
 Prohibited Use Compliance: Confirmed
+
+A further variation designed to probe the model for
+overfitting. It includes small samples of benign data from Feb 3 in the training set, while reserving different
+benign and malicious flows from Feb 3 for final testing.
+
 """
 import pandas as pd
 import numpy as np
@@ -102,6 +107,7 @@ X_test.to_csv(f"{cleaned_root}/X_test.csv", index=False)
 y_test.to_csv(f"{cleaned_root}/y_test.csv", index=False)
 print("Saved all processed files.")
 
+# Debug Info Printing
 print("===================")
 print("Final Dataset Summary:")
 print(f"Train set size:         {len(train)}")
