@@ -1,3 +1,11 @@
+"""
+AI Usage Statement (Han Chen)
+Tools Used: ChatGPT
+    - Usage: Debugging Info printing.
+    - Verification: Code are manually written and verified.
+Prohibited Use Compliance: Confirmed
+"""
+
 import pandas as pd
 import numpy as np
 import os
@@ -70,7 +78,7 @@ df_tv_features = df_tv_final.drop(columns=["Label"])
 df_tv_features, dropped_features = drop_highly_correlated(df_tv_features)
 df_tv_final = pd.concat([df_tv_features, df_tv_final["Label"]], axis=1)
 
-# Apply same drops/log to test set
+# drops/log to test set
 df_test_final[log_features] = np.log1p(df_test_final[log_features])
 df_test_final = df_test_final.drop(columns=dropped_features, errors="ignore")
 

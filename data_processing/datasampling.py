@@ -1,8 +1,8 @@
 """
 AI Usage Statement (Han Chen)
 Tools Used: ChatGPT 
-    - Usage: Code runtime info printing
-    - Verification: Code are manually written
+    - Usage: Code runtime info printing; Consulting how to reduce skewness of data; Graphing the correlation and skewness.
+    - Verification: Code are manually written and verified
 Prohibited Use Compliance: Confirmed
 
 This script is for processing labled CICFlowMeter Friday dataset.

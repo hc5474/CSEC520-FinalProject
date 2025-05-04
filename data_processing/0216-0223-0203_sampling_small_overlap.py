@@ -1,3 +1,10 @@
+"""
+AI Usage Statement (Han Chen)
+Tools Used: N/A
+    - Usage: N/A
+    - Verification: N/A
+Prohibited Use Compliance: Confirmed
+"""
 import pandas as pd
 import numpy as np
 import os
@@ -95,7 +102,6 @@ X_test.to_csv(f"{cleaned_root}/X_test.csv", index=False)
 y_test.to_csv(f"{cleaned_root}/y_test.csv", index=False)
 print("Saved all processed files.")
 
-# Dataset summary
 print("===================")
 print("Final Dataset Summary:")
 print(f"Train set size:         {len(train)}")
